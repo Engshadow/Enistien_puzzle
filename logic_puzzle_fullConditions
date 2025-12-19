@@ -1,0 +1,63 @@
+def solve_potter_puzzle():
+  people = ['Mummy', 'Daddy', 'Peter', 'Betty', 'Polly']
+  desserts = ['IceCream', 'Marmalade', 'Marshmallows', 'Napoleon', 'Waffles']
+  dreams = ['Paris', 'Sea', 'SwanLake', 'Coins']
+  clauses = []
+#create propositional symbols
+  def Likes(person, dessert): return expr(f'Likes_{person}_{dessert}')
+  def Dreams(person, dream): return expr(f'Dream_{person}_{dream}')
+
+# Each person likes exactly one thing at least one + at most one
+  for p in people:
+
+        clauses.append(associate('|', [Likes(p, d) for d in desserts]))
+
+        for i in range(len(desserts)):
+            for j in range(i + 1, len(desserts)):
+                clauses.append(~Likes(p, desserts[i]) | ~Likes(p, desserts[j]))
+
+    # Each person has exactly one dream
+  for p in people:
+    clauses.append(associate('|', [Dreams(p, d) for d in dreams]))
+
+    for i in range(len(dreams)):
+        for j in range(i + 1, len(dreams)):
+            clauses.append(~Dreams(p, dreams[i]) | ~Dreams(p, dreams[j]))
+#C2
+  for p in people:
+          clauses.append(Likes(p, 'IceCream') |'==>'| Dreams(p, 'Paris'))
+  #C3
+  clauses.append(Likes('Betty', 'Marmalade'))
+  #C4
+  clauses.append(Likes('Mummy', 'Marshmallows'))
+  #C5
+  family = ['Mummy', 'Daddy', 'Peter', 'Betty']
+  for p in family:
+      clauses.append(~Dreams(p, 'Paris'))
+# C6: Aunt Polly made a ballet suit for Betty
+# This means Betty dreams of Swan Lake (ballet classes)
+clauses.append(Dreams('Betty', 'SwanLake'))
+
+# C7: Peter collects rare coins
+# This means Peter dreams of collecting coins
+clauses.append(Dreams('Peter', 'Coins'))
+    
+# C8: Peter doesn't like anything with cream
+# Napoleon cake and ice cream have cream
+clauses.append(~Likes('Peter', 'Napoleon'))
+clauses.append(~Likes('Peter', 'IceCream'))
+    
+# C9: Peter and Betty's parents (Mummy and Daddy) have the same New Year wish
+# They must have the same dream
+for d in dreams:
+    clauses.append(Dreams('Mummy', d) >> Dreams('Daddy', d))
+    clauses.append(Dreams('Daddy', d) >> Dreams('Mummy', d))
+    
+# C10: On holidays, Mummy prepares Napoleon cake, marmalade, and waffles
+# These are the family's favorite desserts (excluding Mummy herself and Polly)
+# This means these three desserts are liked by Daddy, Peter, and Betty
+# We already know Betty likes Marmalade (C3)
+# We already know Peter doesn't like Napoleon (C8)
+# So Peter must like Waffles, and Daddy must like Napoleon
+    clauses.append(Likes('Peter', 'Waffles'))
+    clauses.append(Likes('Daddy', 'Napoleon'))
